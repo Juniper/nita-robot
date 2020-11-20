@@ -1,0 +1,9 @@
+Package: nita-robot-3.1.2
+Version: 20.10-1
+Section: base
+Priority: optional
+Architecture: all
+Maintainer: Ashley Burston <aburston@juniper.net>, Hugo Ribeiro <hribeiro@juniper.net>
+Description: Robot addon for NITA base package
+ Copyright Juniper Networks 2020
+ See https://support.juniper.net/support/legal/scriptlicense/

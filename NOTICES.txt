@@ -1,0 +1,81 @@
+NOTICES FOR THIRD-PARTY CODE/DEPENDENCIES
+
+Name: Python (Python Software Foundation).
+URL: https://www.python.org
+License: https://docs.python.org/3/license.html
+
+Name: PIP (Python Packaging Authority (PyPA)).
+URL: https://pip.pypa.io/en/stable/
+License: MIT License (MIT)
+
+Name: PyYAML (YAML parser and emitter for Python).
+URL: https://pypi.org/project/PyYAML/
+License: MIT License (MIT)
+
+Name: beautifulsoup4 (Screen-scraping library)
+URL: https://pypi.org/project/beautifulsoup4/
+License: MIT License (MIT)
+
+Name: bs4 (Dummy package for Beautiful Soup)
+URL: https://pypi.org/project/bs4/
+License: MIT License (MIT)
+
+Name: certifi (Python package for providing Mozilla's CA Bundle.)
+URL: https://pypi.org/project/certifi/
+License: Mozilla Public License 2.0 (MPL 2.0) (MPL-2.0)
+
+Name: chardet (Universal encoding detector for Python 2 and 3)
+URL: https://pypi.org/project/chardet/
+License: GNU Library or Lesser General Public License (LGPL) (LGPL)
+
+Name: idna (Internationalized Domain Names in Applications (IDNA))
+URL: https://pypi.org/project/idna/
+License: BSD License (BSD-like)
+
+Name: lxml (Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API.)
+URL: https://pypi.org/project/lxml/
+License: BSD License (BSD)
+
+Name: requests (Python HTTP for Humans.)
+URL: https://pypi.org/project/requests/
+License: Apache Software License (Apache 2.0)
+
+Name: urllib3 (HTTP library with thread-safe connection pooling, file post, and more.)
+URL: https://pypi.org/project/urllib3/
+License: MIT License (MIT)
+
+Name: python-gitlab (Interact with GitLab API)
+URL: https://pypi.org/project/python-gitlab/
+License: GNU Lesser General Public License v3 (LGPLv3) (LGPLv3)
+
+Name: six (Python 2 and 3 compatibility utilities)
+URL: https://pypi.org/project/six/
+License: MIT License (MIT)
+
+Name: docker (A Python library for the Docker Engine API.)
+URL: https://pypi.org/project/docker/
+License: Apache Software License (Apache License 2.0)
+
+Name: python-dateutil (Extensions to the standard Python datetime module)
+URL: https://pypi.org/project/python-dateutil/
+License: Apache Software License, BSD License (Dual License)
+
+Name: robotframework (Generic automation framework for acceptance testing and robotic process automation (RPA))
+URL: https://pypi.org/project/robotframework/
+License: Apache Software License (Apache License 2.0)
+
+Name: junos-eznc (Junos 'EZ' automation for non-programmers)
+URL: https://pypi.org/project/junos-eznc/
+License: Apache Software License (Apache 2.0)
+
+Name: configparser (Updated configparser from Python 3.8 for Python 2.6+.)
+URL: https://pypi.org/project/configparser/
+License: MIT License
+
+Name: xmltodict (Makes working with XML feel like you are working with JSON)
+URL: https://pypi.org/project/xmltodict/
+License: MIT License (MIT)
+
+Name: Python Docker Image (Python is an interpreted, interactive, object-oriented, open-source programming language.)
+URL: https://hub.docker.com/_/python
+License: https://github.com/docker-library/repo-info/blob/master/repos/python/local/slim-buster.md
