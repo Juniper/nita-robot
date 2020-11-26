@@ -54,8 +54,10 @@ fi
 # pull all the required containers
 IMAGEDIR=${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
-
-docker pull juniper/nita-robot:20.10-1
+(
+    cd ..
+    ./build_container.sh
+)
 docker save juniper/nita-robot:20.10-1 | gzip > ${IMAGEDIR}/nita-robot-20.10.tar.gz
 
 chmod 755 ${PACKAGE}-${VERSION}/usr/local/bin/*
