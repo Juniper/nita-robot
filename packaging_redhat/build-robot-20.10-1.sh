@@ -55,8 +55,8 @@ SOURCE_DIR=${PACKAGE}-${VERSION}-${RELEASE}/SOURCES
 IMAGEDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
 
-docker pull ps-docker.artifactory.aslab.juniper.net/robot:20.10-1
-docker save ps-docker.artifactory.aslab.juniper.net/robot:20.10-1 | gzip > ${IMAGEDIR}/robot-20.10.tar.gz
+docker pull juniper/nita-robot:20.10-1
+docker save juniper/nita-robot:20.10-1 | gzip > ${IMAGEDIR}/nita-robot-20.10.tar.gz
 
 # Create a tarball of with source
 (

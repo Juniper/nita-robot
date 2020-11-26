@@ -15,7 +15,7 @@
 # ********************************************************
 if [ "$_CLI_RUNNER_DEBUG" == 1 ]; then
         echo `cat <<EOT
-docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw ps-docker.artifactory.aslab.juniper.net/robot:20.10-1 /bin/bash
+docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw juniper/nita-robot:20.10-1 /bin/bash
 EOT` >&2
 fi
-docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw ps-docker.artifactory.aslab.juniper.net/robot:20.10-1 /bin/bash
+docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw juniper/nita-robot:20.10-1 /bin/bash

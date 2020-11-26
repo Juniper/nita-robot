@@ -15,4 +15,4 @@
 #
 # ********************************************************
 
-docker build -t ps-docker.artifactory.aslab.juniper.net/robot:20.4-1 .
+docker build -t juniper/nita-robot:20.4-1 .

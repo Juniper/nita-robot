@@ -32,8 +32,8 @@ docker ps --filter status=dead --filter status=exited -aq | xargs -r docker rm -
 docker volume ls -qf dangling=true | xargs -r docker volume rm
 
 # remove docker images
-docker rmi -f ps-docker.artifactory.aslab.juniper.net/robot:20.10-1
-docker rmi -f ps-docker.artifactory.aslab.juniper.net/robot:_nita_release_$VERSION
+docker rmi -f juniper/nita-robot:20.10-1
+docker rmi -f juniper/nita-robot:_nita_release_$VERSION
 
 # remove unused images
 docker images --no-trunc | grep '<none>' | awk '{ print $3 }' | xargs -r docker rmi
