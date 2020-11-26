@@ -51,4 +51,4 @@ function add_image {
 }
 
 # load docker images
-add_image $IMAGES_DIR/nita-robot-20.4.tar.gz juniper/nita-robot:20.10-1
+add_image $IMAGES_DIR/nita-robot-20.10.tar.gz juniper/nita-robot:20.10-1
