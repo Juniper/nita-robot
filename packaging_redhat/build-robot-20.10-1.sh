@@ -54,8 +54,10 @@ SOURCE_DIR=${PACKAGE}-${VERSION}-${RELEASE}/SOURCES
 # pull all the required containers
 IMAGEDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
-
-docker pull juniper/nita-robot:20.10-1
+(
+    cd ..
+    ./build_container.sh
+)
 docker save juniper/nita-robot:20.10-1 | gzip > ${IMAGEDIR}/nita-robot-20.10.tar.gz
 
 # Create a tarball of with source
