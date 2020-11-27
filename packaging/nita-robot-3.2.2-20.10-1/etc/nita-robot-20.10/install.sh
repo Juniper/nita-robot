@@ -15,25 +15,40 @@
 #
 # ********************************************************
 
-PACKAGE=nita-robot-3.1.2
+PACKAGE=nita-robot-3.2.2
 VERSION=20.10-1
+IMAGES_DIR=/usr/share/${PACKAGE}/images
 
 # stop the script if a command fails
-#set -e
-#set -x
+set -e
 
-# wait 15 seconds for the containers to exit
-sleep 15
+# function to add docker images
+function add_image {
 
-# remove exited containers:
-docker ps --filter status=dead --filter status=exited -aq | xargs -r docker rm -v
+    SRC="$1"
+    TAG="$2"
 
-# remove unused volumes:
-docker volume ls -qf dangling=true | xargs -r docker volume rm
+    echo "Adding docker image $2"
 
-# remove docker images
-docker rmi -f juniper/nita-robot:20.10-1
-docker rmi -f juniper/nita-robot:_nita_release_$VERSION
+    # load the image
+    RESPONSE=`docker load -q < ${SRC}`
+    echo $RESPONSE
+    ID=`echo ${RESPONSE} | awk -F: '{ print \$3 }'`
 
-# remove unused images
-docker images --no-trunc | grep '<none>' | awk '{ print $3 }' | xargs -r docker rmi
+    if [[ "x$ID" == "x" ]]; then
+        echo "Failed to load image $SRC"
+        exit 1
+    fi
+
+    # tag the image if it isn't already tagged in the tar.gz file
+    # older versions of docker-ce have this issue
+    if [[ `docker images | awk '{print $1":"$2}' | grep -c "$TAG"` == 0 ]]; then
+        docker tag "$ID" "$TAG"
+    fi
+
+    docker tag "$TAG" "${TAG%:*}:_nita_release_$VERSION"
+
+}
+
+# load docker images
+add_image $IMAGES_DIR/nita-robot-20.10.tar.gz juniper/nita-robot:20.10-1
