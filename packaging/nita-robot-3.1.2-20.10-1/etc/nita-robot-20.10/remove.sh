@@ -16,7 +16,7 @@
 # ********************************************************
 
 PACKAGE=nita-robot-3.1.2
-VERSION=20.20-1
+VERSION=20.10-1
 
 # stop the script if a command fails
 #set -e
