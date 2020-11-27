@@ -17,7 +17,7 @@
 %define          debug_package %{nil}
 %define        __os_install_post %{_dbpath}/brp-compress
 
-Name:           nita-robot-3.1.2
+Name:           nita-robot-3.2.2
 Version:        20.10
 Release:        1
 Summary:        Network Implementation and Test Automation

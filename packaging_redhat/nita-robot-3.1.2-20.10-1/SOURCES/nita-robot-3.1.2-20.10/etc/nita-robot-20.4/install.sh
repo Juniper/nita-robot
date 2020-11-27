@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGE=nita-robot-3.1.2
+PACKAGE=nita-robot-3.2.2
 VERSION=20.10-1
 IMAGES_DIR=/usr/share/${PACKAGE}/images
 
