@@ -15,4 +15,6 @@
 
 FROM python:3.8-slim-buster
 
+LABEL net.juniper.framework="NITA"
+
 RUN python3 -m pip install robotframework pyyaml junos-eznc configparser xmltodict
