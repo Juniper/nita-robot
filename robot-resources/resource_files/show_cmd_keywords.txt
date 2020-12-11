@@ -1,0 +1,423 @@
+# ********************************************************                                                                                     
+#
+# Project: nita-robot
+#
+# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+#
+# Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
+#
+# ********************************************************
+
+*** Settings ***
+Documentation	This file has the keywords for the 'show command' test cases which uses the base keyword from 'device_resources.txt'. NOTE: It has to be developed further to make it complete generic
+
+Resource       ./device_resources.txt
+
+Library	String
+Library	Collections
+Library	XML
+Library	DateTime
+
+
+*** Keywords ***
+
+Get ${device} number of routing engines
+	${re_xml}=	Command Executor	${device}	show chassis routing-engine		xml
+	${root} = 	Parse XML 	${re_xml}
+	Should Not Be Equal 	${root.tag}	error	${re_xml}
+	@{res_list} = 	Get Elements	${re_xml} 	./route-engine
+	${re_number}=	Get Length	${res_list}
+	[Return]	${re_number}
+
+Identify ${device} family
+	${chassis_hw}=	Command Executor	${device}	show chassis hardware	xml
+	${root} = 	Parse XML 	${chassis_hw}
+	Should Not Be Equal 	${root.tag}	error	${chassis_hw}
+	@{descriptions_list} = 	Get Elements Texts 	${chassis_hw} 	./chassis//description
+	Should Not Be Empty		${descriptions_list}	There are no descriptions returned in ${device}!
+	Set Test Variable	${device_family}	NO_FAMILY
+		:FOR	${description}	IN 	@{descriptions_list}
+		# MX family (routers)
+		\	Run Keyword If	'MX' in '${description}'	Set Test Variable	${device_family}	MX
+		\	Run Keyword If	'MX' in '${description}'	Exit For Loop
+		# EX family (switches)
+		\	Run Keyword If	'EX' in '${description}'	Set Test Variable	${device_family}	EX
+		\	Run Keyword If	'EX' in '${description}'	Exit For Loop
+		# QFX family (qfxs)
+		\	Run Keyword If	'QFX' in '${description}'	Set Test Variable	${device_family}	QFX
+		\	Run Keyword If	'QFX' in '${description}'	Exit For Loop
+		# SRX family (firewalls)
+		\	Run Keyword If	'SRX' in '${description}' or 'FIREFLY' in '${description}'	Set Test Variable	${device_family}	SRX
+		\	Run Keyword If	'SRX' in '${description}' or 'FIREFLY' in '${description}'	Exit For Loop
+		# Else?
+	Run Keyword If	'${device_family}' == 'NO_FAMILY'	Fail	Device family was not identified in ${device}!
+	[Return]	${device_family}
+
+Get configuration
+	[Arguments]	${device}
+	Run Keyword		${device}.Get Config
+
+Get piece of configuration
+	[Arguments]     ${device}      ${xml_filter} 
+	Run Keyword		${device}.Get Config    ${xml_filter}
+
+Check JunOS Version multi routing engine
+	[Arguments]	${device}	${software_version}
+	${get_software_details}=	Command Executor	${device}	show version	xml
+	${root} = 	Parse XML 	${get_software_details}
+	Should Not Be Equal 	${root.tag}	error
+	@{junos_version_list} = 	Get Elements Texts 	${get_software_details} 	./multi-routing-engine-item/software-information/junos-version
+	Should Not Be Empty		${junos_version_list}		There are no JunOS versions returned in ${device}!
+		:FOR	${junos_version}	IN 	@{junos_version_list}
+		\	Should Be Equal As Strings	${software_version}	${junos_version}	JunOS version is different that expected in ${device}!
+
+Check JunOS Version dual routing engine
+	[Arguments]	${device}	${software_version}
+	${get_software_details}=	Command Executor	${device}	show version invoke-on all-routing-engines	xml
+	${root} = 	Parse XML 	${get_software_details}
+	Should Not Be Equal 	${root.tag}	error
+	@{junos_version_list} = 	Get Elements Texts 	${get_software_details} 	./multi-routing-engine-item/software-information/junos-version
+	Should Not Be Empty		${junos_version_list}		There are no JunOS versions returned in ${device}!
+		:FOR	${junos_version}	IN 	@{junos_version_list}
+		\	Should Be Equal As Strings	${software_version}	${junos_version}	JunOS version is different that expected in ${device}!
+
+Check JunOS Version
+	[Arguments]	${device}	${software_version}
+	${get_software_details}=	Command Executor	${device}	show version	xml
+	${root} = 	Parse XML 	${get_software_details}
+	Should Not Be Equal 	${root.tag}	error	${get_software_details}
+	@{junos_version_list} = 	Get Elements Texts 	${get_software_details} 	./junos-version
+	Should Not Be Empty		${junos_version_list}		There is no JunOS version returned in ${device}!
+		:FOR	${junos_version}	IN 	@{junos_version_list}
+		\	Should Be Equal As Strings	${software_version}	${junos_version}	JunOS version is different that expected in ${device}!
+
+Check Software Version
+	[Arguments]	${device}	${software-version}
+	${get-software-details}=	Command Executor	${device}	show version	xml	//junos-version
+	#Verification
+	Should be equal	${software-version}	${get-software-details}		JunOS version is different that expected in ${device}!
+
+Check Firmware Version
+	[Arguments] 	${device}	${firmware_version}
+	${get_firmware_details}=	Command Executor	${device}	show chassis firmware	xml
+	${root} = 	Parse XML 	${get_firmware_details}
+	Should Not Be Equal 	${root.tag}	error	${get_firmware_details}
+	@{firmware_list}=	Get Regexp Matches	${get_firmware_details}	\\d+.\\d+[XR]\\d+([-A-Z]+\\d+)?.\\d+
+	Should Not Be Empty		${firmware_list}		There is no Firmware version returned in ${device}!
+		:FOR	${firmware}	IN 	@{firmware_list}
+		\	Should be equal 	${firmware_version} 	${firmware}		JunOS firmware is different that expected in ${device}!
+
+Check System User Information
+	[Arguments]		${device}
+	${get_user}=	Command Executor	${device}	show system user 	xml
+	${root} = 	Parse XML 	${get_user}
+	Should Not Be Equal 	${root.tag}	error	${get_user}
+	${num_users}=	Get Element Count	${get_user}		./uptime-information/user-table/user-entry/user
+	#Verification
+	${status}=		Evaluate	0 <= ${num_users}
+	Should Be True	${status}
+
+Check User ${user_logged_in} is Logged in ${device}
+	${device_family} =	Identify ${device} family
+	${get_user}=	Command Executor	${device}	show system user 	xml
+	${root} = 	Parse XML 	${get_user}
+	Should Not Be Equal 	${root.tag}	error	${get_user}
+	@{mx_users_list}=	Run Keyword If 	'${device_family}' == 'MX'	Get Elements Texts	${get_user}		./uptime-information/user-table/user-entry/user
+	@{ex_users_list}=	Run Keyword If 	'${device_family}' == 'EX'	Get Elements Texts	${get_user}		./multi-routing-engine-item/system-users-information/uptime-information/user-table/user-entry/user
+	#Verification
+	#(Elements from show system users when Get Elements Texts is run at MXs are returned between \n${NAME}\n)
+	Run Keyword If 	'${device_family}' == 'MX'	List Should Contain Value	${mx_users_list}	\n${user_logged_in}\n
+	Run Keyword If 	'${device_family}' == 'EX'	List Should Contain Value	${ex_users_list}	${user_logged_in}
+
+Check System Free Memory Percentage
+	[Arguments]		${device}	${free_memo_threshold}
+	${get_memory_stats}=	Command Executor	${device}	show system memory	xml
+	${root} = 	Parse XML 	${get_memory_stats}
+	Should Not Be Equal 	${root.tag}	error	${get_memory_stats}
+	${free_memory_perc}=	Get Element	${get_memory_stats}		./system-memory-summary-information/system-memory-free-percent
+	#Remove % from text (95% -> 95)
+	${free_memory} =		Get Substring 	${free_memory_perc.text}	0	-1
+	#Verification (Free memory should be <= than threshold (e.g. 10%))
+	${status}=		Evaluate	${free_memo_threshold} <= ${free_memory}
+	Should Be True	${status}
+
+Check Configuration
+	[Arguments]     ${device}
+	${get_conf}=	Command Executor	${device}	show configuration	xml
+	Should Not Be Empty	${get_conf}
+
+Check Routing Table
+	[Arguments]	${device}	${route}=None	${next_hop}=None
+#	${rt}=	 Get Device Routing Table  	${device}
+	${rt}=	 Run Keyword	${device}.Get Routing Table		route=${route}
+	Should Not Be Empty	${rt}	msg=Routing Table at ${device} is emtpy!
+	${route_values} = 	Run Keyword If	'${route}' != 'None'	Get From Dictionary 	${rt}	${route}
+	${rt_next_hop} = 	Run Keyword If	'${route}' != 'None'	Get From List 	${route_values} 	0 	# route_values[0] = next_hop
+	Run Keyword If	'${next_hop}' != 'None'		Should Be Equal		${rt_next_hop}	${next_hop}	msg=Next hop ${rt_next_hop} is different than expeceted: ${next_hop} at ${device} !
+
+Check PFE Statistics
+	[Arguments]     ${device}
+	${stat_value}=	Command Executor    ${device}       show pfe statistics traffic    xml	./pfe-traffic-statistics/pfe-input-packets
+	${status}=	Evaluate	0 < ${stat_value}
+	#Verifications
+	Should Be True	${status}
+
+Check PFE Statistics Local Traffic
+	[Arguments]     ${device}
+	${stat_value}=	Command Executor    ${device}       show pfe statistics traffic    xml	./pfe-local-traffic-statistics/pfe-input-packets
+	${status}=	Evaluate	0 < ${stat_value}
+	#Verifications
+	Should Be True	${status}
+
+Check System Current Time
+	[Arguments]     ${device} 	${time_diff}
+	${uptime}=	Command Executor    ${device}       show system uptime    xml	//current-time/date-time
+	${time}=	Split String From Right	${uptime}	${Empty}	1
+	${device_time}=	Get From List	${time}	0
+	${current_time}=	Get Current Date	UTC 	${time_diff}
+	${time_difference}=	Subtract Date From Date	${current_time}	${device_time}
+	# ±600 means the system time can be 10 min greater or lesser
+	Should be true	-600 < ${time_difference} < 600
+
+Check No Chassis Alarms
+	[Arguments]     ${device}
+	${ch_alarms}=	Command Executor    ${device}       show chassis alarms    xml
+	${root} = 	Parse XML 	${ch_alarms}
+	Should Not Be Equal 	${root.tag}	error	${ch_alarms}
+	#Verifications
+	@{chassis_alarms_list} = 	Get Elements	${ch_alarms} 	./alarm-detail
+	${chassis_alarms_list_length}=	Get Length	${chassis_alarms_list}
+		:FOR	${chassis_alarm}	IN 	@{chassis_alarms_list}
+		\	${class}=			Get Element Text 	${chassis_alarm}	./alarm-class
+		\	${description}=		Get Element Text 	${chassis_alarm}	./alarm-description
+		\	Run Keyword If	${chassis_alarms_list_length} != 0		Log To Console	There is a ${class} alarm: ${description}!
+	Element Should Not Exist	${ch_alarms}	./alarm-summary/active-alarm-count		There are chassis alarms in ${device}!
+
+Check No System Alarms
+	[Arguments]     ${device}
+	${sys_alarms}=	Command Executor    ${device}	show system alarms    xml
+	${root} = 	Parse XML 	${sys_alarms}
+	Should Not Be Equal 	${root.tag}	error	${sys_alarms}
+	#Verifications
+	@{sys_alarms_list} = 	Get Elements	${sys_alarms} 	./alarm-detail
+	${sys_alarms_list_length}=	Get Length	${sys_alarms_list}
+		:FOR	${sys_alarm}	IN 	@{sys_alarms_list}
+		\	${class}=			Get Element Text 	${sys_alarm}	./alarm-class
+		\	${description}=		Get Element Text 	${sys_alarm}	./alarm-description
+		\	Run Keyword If	${sys_alarms_list_length} != 0		Log To Console	There is a ${class} alarm: ${description}!
+	Element Should Not Exist	${sys_alarms}	./alarm-summary/active-alarm-count		There are system alarms in ${device}!
+
+# Generic KW for checking core dumps
+Check Core Dumps
+	[Arguments]		${device}
+	${re_number} =	Get ${device} number of routing engines
+	${device_family} =	Identify ${device} family
+	Run Keyword If 	'${device_family}' == 'MX' and ${re_number} == 1	Check Core Dumps single RE 	${device}
+	Run Keyword If 	'${device_family}' == 'SRX' and ${re_number} == 1	Check Core Dumps single RE 	${device}
+	Run Keyword If 	'${device_family}' == 'MX' and ${re_number} > 1	Check Core Dumps double RE 	${device}
+	Run Keyword If 	'${device_family}' == 'EX' and ${re_number} > 1	Check Core Dumps multi RE 	${device}
+	Run Keyword If 	'${device_family}' == 'QFX'							Check Core Dumps multi RE 	${device}
+
+# Check Core Dumps Single RE
+Check Core Dumps single RE
+	[Arguments]		${device}
+	${core_dumps_xml}=	Command Executor	${device}	show system core-dumps		xml
+	${root} = 	Parse XML 	${core_dumps_xml}
+	Should Not Be Equal 	${root.tag}	error	${core_dumps_xml}
+	@{core_dumps_list} = 	Get Elements	${core_dumps_xml} 	./directory/file-information
+	${core_dumps_list_length}=	Get Length	${core_dumps_list}
+		:FOR	${core_dump}	IN 	@{core_dumps_list}
+		\	${name}=	Get Element Text 	${core_dump}	./file-name
+		\	Run Keyword If	${core_dumps_list_length} != 0		Log To Console	\nThere is a core-dump file at: ${name}
+	#Verifications
+	Element Should Not Exist	${core_dumps_xml}	./directory/file-information/file-name		\nThere is/are ${core_dumps_list_length} core-dump file(s) in ${device}!
+
+# Check Core Dumps Double RE (MXs)
+Check Core Dumps double RE
+	[Arguments]		${device}
+	${core_dumps_xml}=	Command Executor	${device}	show system core-dumps routing-engine both		xml
+	${root} = 	Parse XML 	${core_dumps_xml}
+	Should Not Be Equal 	${root.tag}	error	${core_dumps_xml}
+	@{core_dumps_list} = 	Get Elements	${core_dumps_xml} 	./multi-routing-engine-item/directory-list/directory/file-information
+	${core_dumps_list_length}=	Get Length	${core_dumps_list}
+		:FOR	${core_dump}	IN 	@{core_dumps_list}
+		\	${name}=	Get Element Text 	${core_dump}	./file-name
+#		\	${size}=	Get Element Text 	${core_dump}	./file-size
+		\	Run Keyword If	${core_dumps_list_length} != 0		Log To Console	\nThere is a core-dump file at: ${name}
+	#Verifications
+	Should Be Equal As Integers	${core_dumps_list_length}	0	\nThere is/are ${core_dumps_list_length} core-dump file(s) in ${device}!		values=False
+
+# Check Core Dumps Multi RE
+Check Core Dumps multi RE
+	[Arguments]     ${device}
+	${core_dumps_xml}=	Command Executor    ${device}       show system core-dumps    xml
+	${root} = 	Parse XML 	${core_dumps_xml}
+	Should Not Be Equal 	${root.tag}	error	${core_dumps_xml}
+	@{core_dumps_list} = 	Get Elements	${core_dumps_xml} 	./multi-routing-engine-item/directory-list/directory/file-information
+	${core_dumps_list_length}=	Get Length	${core_dumps_list}
+		:FOR	${core_dump}	IN 	@{core_dumps_list}
+		\	${name}=	Get Element Text 	${core_dump}	./file-name
+#		\	${size}=	Get Element Text 	${core_dump}	./file-size
+		\	Run Keyword If	${core_dumps_list_length} != 0		Log To Console	\nThere is a core-dump file at: ${name}
+	#Verifications
+	Should Be Equal As Integers	${core_dumps_list_length}	0	\nThere is/are ${core_dumps_list_length} core-dump file(s) in ${device}!		values=False
+
+# Deprecated
+Check Partition
+	[Arguments]		${device}
+	${available_storage}=	Command Executor	${device}	show system storage	text	${Empty}	/dev/ad0s1a +\\d.?\\d[GM] +\\d.?\\d[GM] +(\\d.?\\d[GM]) +\\d.?\\d[%] +/
+	# Extract first element of the list returned with REGEX
+	${size}=    Get From List     ${available_storage}    0
+	${size_suffix}=	Get Substring 	${size} 	-1
+	${size_number}=	Get Substring 	${size}		0	-1
+	#Verification
+	# If less than 400, see if size is in GB to verify /cf is bigger (e.g. 1.2G)
+	${enough_available}=	Evaluate	${size_number} > 400
+	${isBigger}=	Run Keyword If	${enough_available} is False	Evaluate	${size_number} * 1024 >= 400
+	# If bigger, it might be in GBytes instead of MBytes
+	# If it is in GBytes, then it must much the G, otherwise storage is less than threshold!
+	Run Keyword If	${isBigger} is True		Should Match	${size_suffix}	G 	Available storage is less than 400 MB in ${device}!		values=False
+	# If it is in MBytes, then storage is less than threshold!
+	Run Keyword If	${isBigger} is False	Fail	Available storage is less than threshold (400 MB) in ${device}!
+
+Check available storage
+	[Arguments]		${device}	${root_storage_threshold}	${var_storage_threshold}	${config_storage_threshold}
+	${system_storage_xml}=	Command Executor	${device}	show system storage		xml
+	${root} = 	Parse XML 	${system_storage_xml}
+	Should Not Be Equal 	${root.tag}	error	${system_storage_xml}
+	@{used_percent_list}=	Get Elements Texts	${system_storage_xml} 	./filesystem/used-percent
+	@{mounted_on_list}=		Get Elements Texts	${system_storage_xml} 	./filesystem/mounted-on
+	${used_percent_list_length}=	Get Length	${used_percent_list}
+	${mounted_on_list_length}=		Get Length	${mounted_on_list}
+	Should Be Equal as Integers		${used_percent_list_length}	${mounted_on_list_length}
+		:FOR	${INDEX}	IN RANGE	${mounted_on_list_length}
+		\	${used_percent_tmp}=	Get From List 	${used_percent_list}	${INDEX}
+		\	${mounted_on_tmp}=		Get From List 	${mounted_on_list}		${INDEX}
+		\	${used_percent} =	Strip String 	${used_percent_tmp}	mode=both
+		\	${mounted_on}=		Strip String 	${mounted_on_tmp}	mode=both
+		\	Run Keyword If	'${mounted_on}' == '/'			Should Be True	${used_percent} <= ${root_storage_threshold}	Available storage (%) at / is less than threshold: ${root_storage_threshold} in ${device}!
+		\	Run Keyword If	'${mounted_on}' == '/var'		Should Be True	${used_percent} <= ${var_storage_threshold}		Available storage (%) at /var is less than threshold: ${var_storage_threshold} in ${device}!
+		\	Run Keyword If	'${mounted_on}' == '/config'	Should Be True	${used_percent} <= ${config_storage_threshold}	Available storage (%) at /config is less than threshold: ${config_storage_threshold} in ${device}!
+
+Check available storage at multi routing engine
+	[Arguments]		${device}	${root_storage_threshold}	${var_storage_threshold}	${config_storage_threshold}
+	${system_storage_xml}=	Command Executor	${device}	show system storage		xml
+	${root} = 	Parse XML 	${system_storage_xml}
+	Should Not Be Equal 	${root.tag}	error	${system_storage_xml}
+	@{multi_re_used_percent_list}=		Get Elements Texts	${system_storage_xml} 	./multi-routing-engine-item/system-storage-information/filesystem/used-percent
+	@{multi_re_mounted_on_list}=	Get Elements Texts	${system_storage_xml} 	./multi-routing-engine-item/system-storage-information/filesystem/mounted-on
+	${multi_re_used_percent_list_length}=	Get Length	${multi_re_used_percent_list}
+	${multi_re_mounted_on_list_length}=		Get Length	${multi_re_mounted_on_list}
+	Should Be Equal as Integers		${multi_re_used_percent_list_length}	${multi_re_mounted_on_list_length}
+		:FOR	${INDEX}	IN RANGE	${multi_re_mounted_on_list_length}
+		\	${used_percent_tmp}=	Get From List 	${multi_re_used_percent_list}	${INDEX}
+		\	${mounted_on_tmp}=		Get From List 	${multi_re_mounted_on_list}		${INDEX}
+		\	${used_percent} =	Strip String 	${used_percent_tmp}	mode=both
+		\	${mounted_on}=		Strip String 	${mounted_on_tmp}	mode=both
+		\	Run Keyword If	'${mounted_on}' == '/'			Should Be True	${used_percent} <= ${root_storage_threshold}	Available storage (%) at / is less than threshold: ${root_storage_threshold} in ${device}!
+		\	Run Keyword If	'${mounted_on}' == '/var'		Should Be True	${used_percent} <= ${var_storage_threshold}		Available storage (%) at /var is less than threshold: ${var_storage_threshold} in ${device}!
+		\	Run Keyword If	'${mounted_on}' == '/config'	Should Be True	${used_percent} <= ${config_storage_threshold}	Available storage (%) at /config is less than threshold: ${config_storage_threshold} in ${device}!
+
+Check FPC Is Online
+	[Arguments]		${device}
+	${fpcs_xml}=	Command Executor    ${device}       show chassis fpc    xml
+	${root} = 	Parse XML 	${fpcs_xml}
+	Should Not Be Equal 	${root.tag}	error	${fpcs_xml}
+	@{fpcs_state_list}= 	Get Elements Texts	${fpcs_xml} 	./fpc/state
+		:FOR	${fpc_status}	IN 	@{fpcs_state_list}
+		\	Should Match Regexp		${fpc_status}	Online|Empty
+
+Check cli authorization
+	[Arguments]	${device}	${role}
+	${cli_auth}=	Command Executor    ${device}       show cli authorization    xml	//user-information/user-class
+	Should Be Equal	${cli_auth}		${role}
+
+Check cli authorization allowed commands
+	[Arguments]	${device}	${command}
+	${cli_auth_cmd}=	Command Executor    ${device}       show cli authorization    xml	//command-authorization/allow-command
+	Should Contain	${cli_auth_cmd}		${command}
+
+Check cli authorization denied commands
+	[Arguments]	${device}	${command}
+	${cli_auth_cmd}=	Command Executor    ${device}       show cli authorization    xml	//command-authorization/deny-command
+	Should Contain	${cli_auth_cmd}		${command}
+
+Show interfaces
+	[Arguments]	${device}
+	Command Executor    ${device}       show interfaces    text
+
+Clear interface statistics
+	[Arguments]	${device}
+	Command Executor    ${device}       clear interfaces statistics all    text
+
+Check BGP neighbors
+	[Arguments]	${device}	${num_neighbor}
+	${bgp_summary_xml}=	Command Executor	${device}	show bgp summary		xml
+	${output} = 	Parse XML 	${bgp_summary_xml}
+	${output_message} = 	Run Keyword If	'${output.tag}' == 'output'		Get Element Text	${bgp_summary_xml}	.
+	Run Keyword If	'${output.tag}' == 'output'		Should Not Match Regexp		${output_message}	BGP is not running	BGP is not running in ${device}!	values=False
+	${peer_count}=				Get Element Text	${bgp_summary_xml}		peer-count
+	@{peer_state_list}=			Get Elements Texts	${bgp_summary_xml}		./bgp-peer/peer-state
+	@{peer_address_list}=		Get Elements Texts	${bgp_summary_xml}		./bgp-peer/peer-address
+	${peer_state_list_length}=	Get Length	${peer_state_list}
+	${peer_address_list_length}=	Get Length	${peer_address_list}
+	Should Be Equal	${peer_count}		${num_neighbor}
+	Should Be Equal	'${peer_count}'		'${peer_state_list_length}'
+	Should Be Equal	'${peer_count}'		'${peer_address_list_length}'
+		:FOR	${INDEX}	IN RANGE	${peer_state_list_length}
+		\	${peer_address}=	Get From List 	${peer_address_list}	${INDEX}
+		\	${peer_state}=	Get From List 	${peer_state_list}	${INDEX}
+		\	Should Be Equal	${peer_state}	Established		Peer ${peer_address} state is ${peer_state} in ${device}!
+
+# TODO
+# This Keyword needs a bit more of detail because it is not accurate (last line should be in a loop or something like)
+#
+# Check BGP Authentication
+# 	[Arguments]		${device}
+# 	${bgp_nbr_xml}=	Command Executor	${device}	show bgp neighbor	xml
+# 	${output} =	Parse XML	${bgp_nbr_xml}
+# 	${output_message} =	Run Keyword If	'${output.tag}' == 'output'	Get Element Text  ${bgp_nbr_xml}  .
+# 	Run Keyword If	'${output.tag}' == 'output'	Should Not Match Regexp	${output_message} BGP is not running  BGP is not running in ${device}!  values=False
+# 	Element Should Exist	${bgp_nbr_xml}	./bgp-peer/bgp-option-information/authentication-configured	Authentication is not configured on ${device}!
+
+Check OSPF neighbors
+	[Arguments]	${device}	${num_neighbor}
+	${ospf_overview_xml}=	Command Executor	${device}	show ospf overview		xml
+	${output} = 	Parse XML 	${ospf_overview_xml}
+	${output_message} = 	Run Keyword If	'${output.tag}' == 'output'		Get Element Text	${ospf_overview_xml}	.
+	Run Keyword If	'${output.tag}' == 'output'		Should Not Match Regexp		${output_message}	OSPF instance is not running	OSPF is not running in ${device}!	values=False
+	${neighbor_count}=	Command Executor	${device}		show ospf overview		xml		//ospf-nbr-up-count
+	Should Be Equal	${neighbor_count}		${num_neighbor}		The number of OSPF neighbors is different than expected in ${device}!
+	${ospf_neighbor_xml}=		Command Executor	${device}	show ospf neighbor		xml
+	@{neighbor_address_list}=	Get Elements Texts	${ospf_neighbor_xml}		./ospf-neighbor/neighbor-address
+	@{neighbor_state_list}=		Get Elements Texts	${ospf_neighbor_xml}		./ospf-neighbor/ospf-neighbor-state
+	${neighbor_address_list_length}=	Get Length	${neighbor_address_list}
+	${neighbor_state_list_length}=		Get Length	${neighbor_state_list}
+	Should Be Equal		${neighbor_count}		${num_neighbor}
+	Should Be Equal		'${neighbor_count}'		'${neighbor_address_list_length}'
+	Should Be Equal		'${neighbor_count}'		'${neighbor_state_list_length}'
+		:FOR	${INDEX}	IN RANGE	${neighbor_state_list_length}
+		\	${neighbor_address}=	Get From List 	${neighbor_address_list}	${INDEX}
+		\	${neighbor_state}=		Get From List 	${neighbor_state_list}	${INDEX}
+		\	Should Be Equal	${neighbor_state}	Full	Neighbor ${neighbor_address} state is ${neighbor_state} in ${device}!	values=False
+
+Check OSPF Authentication
+	[Arguments]	${device}	${num_neighbor}
+	${ospf_overview_xml}=	Command Executor	${device}	show ospf overview		xml
+	${output} = 	Parse XML 	${ospf_overview_xml}
+	${output_message} = 	Run Keyword If	'${output.tag}' == 'output'		Get Element Text	${ospf_overview_xml}	.
+	Run Keyword If	'${output.tag}' == 'output'		Should Not Match Regexp		${output_message}	OSPF instance is not running	OSPF is not running in ${device}!	values=False
+	${neighbor_count}=	Command Executor	${device}		show ospf overview		xml		//ospf-nbr-up-count
+	Should Be Equal	${neighbor_count}		${num_neighbor}		The number of OSPF neighbors is different than expected in ${device}!
+	${ospf_if_xml}=				Command Executor	${device}	show ospf interface extensive	xml
+	@{authentication_types}=		Get Elements Texts	${ospf_if_xml}	./ospf-interface/authentication-type
+	${md5_authenticated_neighbors}=		Count Values In List 	${authentication_types}		MD5
+	Should Be Equal	'${md5_authenticated_neighbors}'	'${num_neighbor}'	There are different number of MD5 authenticated OSPF neighbors: ${md5_authenticated_neighbors} than the expected number: ${num_neighbor} in ${device}!	values=False
+
+
+
+

@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# ********************************************************
+#!/usr/bin/env python
+# ********************************************************                                                                                     
 #
 # Project: nita-robot
 #
@@ -14,25 +13,33 @@
 #
 # ********************************************************
 
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10-1
+# ANSIBLE variables
+import yaml
+from os import walk
 
-# stop the script if a command fails
-#set -e
-#set -x
+def parse_ansible_vars(group_vars, host_vars):
+    gf = []
+    for (dirpath, dirnames, filenames) in walk(group_vars):
+	gf.extend(filenames)
+	break
 
-# wait 15 seconds for the containers to exit
-sleep 15
+    hf = []
+    for (dirpath, dirnames, filenames) in walk(host_vars):
+	hf.extend(filenames)
+	break
 
-# remove exited containers:
-docker ps --filter status=dead --filter status=exited -aq | xargs -r docker rm -v
+    av = {}
+    av['group_vars'] = {}
+    for i in gf:
+	f = open(group_vars + "/" + i, "r")
+	y = yaml.load(f)
+	f.close()
+	av['group_vars'][i] = y
+    av['host_vars'] = {}
+    for i in hf:
+	f = open(host_vars + "/" + i, "r")
+	y = yaml.load(f)
+	f.close()
+	av['host_vars'][i] = y
 
-# remove unused volumes:
-docker volume ls -qf dangling=true | xargs -r docker volume rm
-
-# remove docker images
-docker rmi -f juniper/nita-robot:20.10-1
-docker rmi -f juniper/nita-robot:_nita_release_$VERSION
-
-# remove unused images
-docker images --no-trunc | grep '<none>' | awk '{ print $3 }' | xargs -r docker rmi
+    return av

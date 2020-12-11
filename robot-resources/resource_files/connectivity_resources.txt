@@ -1,0 +1,97 @@
+# ********************************************************                                                                                     
+#
+# Project: nita-robot
+#
+# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+#
+# Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
+#
+# ********************************************************
+
+*** Settings ***
+Documentation   A resource file with reusable keywords and variables
+Library		String
+
+*** Keywords ***
+
+Load Configuration From Template
+	[ARGUMENTS]	${device}	${template}	${template_format}	${template_variables}
+
+	Run Keyword	${device}.Load Configuration From Template	${device}	jinja2_file=${template}	template_vars=${template_variables}	format=${template_format}
+
+
+Load Configuration From File
+	[ARGUMENTS]	${device}	${conf_path}	${conf_format}	${comment}
+
+	Run Keyword	${device}.Load Configuration From File 	${device}	path=${conf_path}		format=${conf_format}		commit_comment=${comment}
+
+
+Configure Interface On Device
+	[ARGUMENTS]	${device}	${device_ip}	${device_interface}
+
+	${template_args}=	Run Keyword	Create Dictionary	interface=${device_interface}	ip_address=${device_ip}
+
+	#Push config to device
+	Run Keyword	Load Configuration From Template	${device}	${EXECDIR}/templates/${device}/config_IP_on_device.j2	set	${template_args}
+
+
+Configure Vlan Interface On Device
+	[ARGUMENTS]	${device}	${device_ip}	${device_interface}	${interface_unit}	${vlan_id}
+
+	${template_args}=	Run Keyword	Create Dictionary	ip_address=${device_ip}	interface=${device_interface}	interface_unit=${interface_unit}	vlan_id=${vlan_id}
+
+	#Push config to device
+	Run Keyword	Load Configuration From Template	${device}	${EXECDIR}/templates/${device}/config_vlan_interface_on_device.j2	set	${template_args}
+
+Ping Test From Device
+	[ARGUMENTS]	${device}	${dest_ip_addr}
+
+	${device_response}=	Run Keyword	${device}.Commands Executor	command=ping inet count 3 ${dest_ip_addr}		format=xml	xpath=//packet-loss
+
+ 	#Check connectivity
+ 	Should Not Be Equal	${device_response}	100
+
+Ping Test From Device Routing Instance
+	[ARGUMENTS]	${device}	${dest_ip_addr}	${routing_instance}
+
+	${device_response}=	Run Keyword	${device}.Commands Executor	command=ping inet count 3 ${dest_ip_addr} routing-instance ${routing_instance}		format=xml	xpath=//packet-loss
+
+ 	#Check connectivity
+ 	Should Not Be Equal	${device_response}	100
+
+Ping Test Between Devices
+	[ARGUMENTS]	${device.one}	${device.two}	${device.one.ip_address}	${device.two.ip_address}
+
+	${device_one_ping_response}=	Run Keyword	${device.one}.Commands Executor	command=ping inet count 3 ${device.two.ip_address}		format=xml	xpath=//packet-loss
+	${device_two_ping_response}=	Run Keyword	${device.two}.Commands Executor	command=ping inet count 3 ${device.one.ip_address}		format=xml	xpath=//packet-loss
+
+ 	#Check connectivity
+ 	Should Not Be Equal	${device_one_ping_response}	100
+ 	Should Not Be Equal	${device_two_ping_response}	100
+
+Ping Test Between Boxes
+	[ARGUMENTS]	${box1}	${box2}	${box1_ip}	${box2_ip}
+
+	#Ping test
+	${ping_box2_response}=	Run Keyword	${box1}.Execute Command	cli_command=ping -c 1 ${box2_ip}
+	${ping_box1_response}=	Run Keyword	${box2}.Execute Command	cli_command=ping -c 1 ${box1_ip}
+
+	#Check Response
+	Should Contain	${ping_box1_response}	1 packets transmitted, 1 received, 0% packet loss
+	Should Contain	${ping_box2_response}	1 packets transmitted, 1 received, 0% packet loss
+
+Ping Test Between Boxes Count
+	[ARGUMENTS]	${box1}	${box2}	${box1_ip}	${box2_ip} 	${count}
+
+	#Ping test
+	${ping_box2_response}=	Run Keyword	${box1}.Execute Command	cli_command=ping -c ${count} ${box2_ip}
+	${ping_box1_response}=	Run Keyword	${box2}.Execute Command	cli_command=ping -c ${count} ${box1_ip}
+
+	#Check Response
+	Should Contain	${ping_box1_response}	${count} packets transmitted, ${count} received, 0% packet loss
+	Should Contain	${ping_box2_response}	${count} packets transmitted, ${count} received, 0% packet loss
+

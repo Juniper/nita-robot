@@ -1,0 +1,47 @@
+# ********************************************************                                                                                     
+#
+# Project: nita-robot
+#
+# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+#
+# Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
+#
+# ********************************************************
+
+*** Settings ***
+Documentation   A resource file with reusable keywords for 'executing the command in device',initiate device connection and tear down device connection.It can be used for any devices such as  SWITCH,ROUTER,FIREWALL.		NOTE: It has to be developed further to make it complete generic
+
+
+*** Keywords ***
+
+Device Open Connection
+	[Arguments]	@{devices}
+	:FOR    ${device}    IN    @{devices}
+	\	Run Keyword     ${device}.Open Connection
+
+Device Close Connection
+	[Arguments]	@{devices}
+	:FOR    ${device}    IN    @{devices}
+        \	Run Keyword     ${device}.Close Connection
+
+Command Executor
+	[Arguments]	${device}	${command}	${display_format}=${Empty}	${xpath}=${Empty}	${regex}=${Empty}
+	${result}=	Run Keyword	${device}.Commands Executor	command=${command}	format=${display_format}	xpath=${xpath}	regex=${regex}
+	[Return]	${result}
+
+Box Command Executor
+	[Arguments]	${box}	${command}
+	${result}=	Run Keyword	${box}.Execute Command	${command}
+
+Rollback Device Config
+	[Arguments]	@{devices}
+	:FOR    ${device}    IN    @{devices}
+	\	Run Keyword	${device}.Rollback 	rollback_num=1	commit_comment="Automated Rollback of RF tests"
+
+Rollback
+	[Arguments]	${device}	${number}
+	Run Keyword	${device}.Rollback 	rollback_num=${number}	commit_comment="Automated Rollback of RF tests"	

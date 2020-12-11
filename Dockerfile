@@ -1,7 +1,6 @@
 # ********************************************************
 #
 # Project: nita-robot
-# Version: 20.10
 #
 # Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
 #
@@ -18,3 +17,6 @@ FROM python:3.8-slim-buster
 LABEL net.juniper.framework="NITA"
 
 RUN python3 -m pip install robotframework pyyaml junos-eznc configparser xmltodict
+
+RUN mkdir /usr/share/nita-robot
+COPY robot-resources /usr/share/nita-robot/robot-resources
