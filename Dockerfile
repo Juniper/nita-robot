@@ -16,6 +16,7 @@ FROM python:3.8-slim-buster
 
 LABEL net.juniper.framework="NITA"
 
+RUN apt-get update && apt-get install -y vim
 RUN python3 -m pip install robotframework pyyaml junos-eznc configparser xmltodict
 
 RUN mkdir /usr/share/nita-robot
