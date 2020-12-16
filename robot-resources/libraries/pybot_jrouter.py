@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ********************************************************                                                                                     #                                                                                                                                              # Project: nita-webapp
 #
 # Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
