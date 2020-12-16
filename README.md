@@ -59,4 +59,4 @@ sudo yum install ./nita-robot-3.2.2-20.10-1.noarch.rpm
 
 # Misc
 
-For more information on NITA releases refer to the [README.md](./README.md) for the NITA Webapp <link to that>
+For more information on NITA releases refer to the [README.md](https://github.com/Juniper/nita-webapp/blob/main/README.md) for the NITA Webapp <link to that>
