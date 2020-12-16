@@ -13,10 +13,15 @@
 #
 # ********************************************************
 
-import imp
+import importlib.util
+import sys
 
-juniper_common = imp.load_source("juniper_common", "variables_file/juniper_common.py")
-import juniper_common as juniper_common
+spec = importlib.util.spec_from_file_location("juniper_common", "/usr/share/nita-robot/robot-resources/variables_file/juniper_common.py")
+module = importlib.util.module_from_spec(spec)
+sys.modules["juniper_common"] = module
+spec.loader.exec_module(module)
+
+import juniper_common
 
 import os
 cwd = os.getcwd()
@@ -27,9 +32,9 @@ host_vars = cwd + "/../host_vars"
 
 # barf if you can't find the directories
 if (os.path.isdir(group_vars) == False) :
-	raise Exception("Error, can't find directory: " + group_vars + " in " + cwd)
+    raise Exception("Error, can't find directory: " + group_vars + " in " + cwd)
 if (os.path.isdir(host_vars) == False) :
-	raise Exception("Error, can't find directory: " + host_vars + " in " + cwd)
+    raise Exception("Error, can't find directory: " + host_vars + " in " + cwd)
 
 # parse the files
 av = juniper_common.parse_ansible_vars(group_vars, host_vars)
@@ -39,14 +44,14 @@ user = av['group_vars']['all.yaml']['netconf_user']
 password = av['group_vars']['all.yaml']['netconf_passwd']
 
 # set the management ip variables i.e. vmx1_mgmt_ip = "100.123.1.0"
-for key, value in av['host_vars'].iteritems():
+for key, value in iter(av['host_vars'].items()):
     if 'management_interface' in value.keys():
         ip = value['management_interface']['ip']
         exec(key.replace("-", "_").replace(".yaml","") + '_mgmt_ip = "' + ip + '"')
 
 # core interface ip variables for use in tests
 # create ci_vmx1_ge_0_0_0, etc
-for key, value in av['host_vars'].iteritems():
+for key, value in iter(av['host_vars'].items()):
     if 'core_interfaces' in value.keys():
         for i in value['core_interfaces']:
             hname = key.replace("-","_").replace(".yaml", "")

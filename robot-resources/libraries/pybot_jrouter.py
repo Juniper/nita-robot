@@ -18,7 +18,7 @@ import xml.dom.minidom
 import lxml
 
 # stdlib
-import StringIO
+from io import StringIO
 import re
 import subprocess as sub
 from subprocess import Popen, PIPE
@@ -113,7 +113,7 @@ class pybot_jrouter(object):
         except KeyError:
             self.port = 22
         except ValueError as v_error:
-            print "WARN Variable value problems: %s" %v_error
+            print("WARN Variable value problems: %s" %v_error)
             raise ContinuableError("Variable value problems: %s" %v_error)
 
         self.ROBOT_LIBRARY_LISTENER = self
@@ -130,7 +130,7 @@ class pybot_jrouter(object):
             self._conn.timeout = 120*120
             return self
         except ConnectError as c_error:
-            print "WARN Connection problems %s target: %s port: %s" % (c_error, self.target, self.port)
+            print("WARN Connection problems %s target: %s port: %s" % (c_error, self.target, self.port))
             raise ContinuableError("Connection problems %s target: %s port: %s" %(c_error, self.target, self.port))
 
     def close_connection(self):
@@ -139,7 +139,7 @@ class pybot_jrouter(object):
             self._conn.close()
             return self
         except ConnectError as c_error:
-            print "WARN Connection problems %s" %c_error
+            print("WARN Connection problems %s" %c_error)
             raise ContinuableError("Connection problems %s" %c_error)
 
     def load_configuration_from_file(self, synchronize=True, overwrite=False, **kvargs):
@@ -188,7 +188,7 @@ class pybot_jrouter(object):
                 #    - kvargs force_synchronize: Default False. On dual control plane systems, forces the candidate configuration on one control plane to be copied to the other control plane. Default is False
                 #    - kvargs full: Default False. When True requires all the daemons to check and evaluate the new configuration
         """
-        print "*INFO* Host %s|load_configuration_from_template|General Options: format=%s, print_conf_diff=%s, print_conf_detail=%s" % (self.target, format, print_conf_diff, print_conf_detail)
+        print("*INFO* Host %s|load_configuration_from_template|General Options: format=%s, print_conf_diff=%s, print_conf_detail=%s" % (self.target, format, print_conf_diff, print_conf_detail))
 
         synchronize = True
         force_synchronize = False
@@ -210,16 +210,16 @@ class pybot_jrouter(object):
 
         if force_synchronize:
             synchronize = True
-            print "*INFO* Host %s|load_configuration_from_template|Force Synchronized Commit requested" % (self.target)
+            print("*INFO* Host %s|load_configuration_from_template|Force Synchronized Commit requested" % (self.target))
         if synchronize:
-            print "*INFO* Host %s|load_configuration_from_template|Synchronized Commit requested" % (self.target)
+            print("*INFO* Host %s|load_configuration_from_template|Synchronized Commit requested" % (self.target))
         if full:
-            print "*INFO* Host %s|load_configuration_from_template|Commit Full requested" % (self.target)
-        print "*INFO* Host %s|load_configuration_from_template|Load Options: merge=%s, overwrite=%s" % (self.target, merge, overwrite)
+            print("*INFO* Host %s|load_configuration_from_template|Commit Full requested" % (self.target))
+        print("*INFO* Host %s|load_configuration_from_template|Load Options: merge=%s, overwrite=%s" % (self.target, merge, overwrite))
 
         if format == 'set' and overwrite:
             overwrite = False
-            print "*WARN* Host %s|load_configuration_from_template|Not possible to override the configuration with format=set. Overwriting disabled." % (self.target)
+            print("*WARN* Host %s|load_configuration_from_template|Not possible to override the configuration with format=set. Overwriting disabled." % (self.target))
 
         yaml_file = kvargs['template_vars']
         # Loading files and rendering
@@ -228,7 +228,7 @@ class pybot_jrouter(object):
         loadResp = ''
         commitResp = False
 
-        print "*INFO* Host %s|load_configuration_from_template|Initializing variables. template_path=%s." % (self.target, kvargs['jinja2_file'])
+        print("*INFO* Host %s|load_configuration_from_template|Initializing variables. template_path=%s." % (self.target, kvargs['jinja2_file']))
         try:
             #Unlock/close configuration is managed by Config context manager
             with Config(self._conn, mode=conf_mode) as candidate:
@@ -239,14 +239,14 @@ class pybot_jrouter(object):
                     loadResp = candidate.load(template_path=kvargs['jinja2_file'], template_vars=myvars, format=format, overwrite=False, merge=merge)
                 finish_load_datetime = datetime.now()
                 if loadResp.find("ok") is None:
-                    print "*WARN* Host %s|load_configuration_from_template|Load Response did not throw an exception but something unexpected occurred: %s" % (self.target, etree.tostring(loadResp))
+                    print("*WARN* Host %s|load_configuration_from_template|Load Response did not throw an exception but something unexpected occurred: %s" % (self.target, etree.tostring(loadResp)))
                     return False
 
                 if print_conf_diff:
                     try:
-                        print '*INFO* Host %s|load_configuration_from_template|DIFF configuration to be committed  %s' % (self.target, candidate.diff())
+                        print('*INFO* Host %s|load_configuration_from_template|DIFF configuration to be committed  %s' % (self.target, candidate.diff()))
                     except lxml.etree.XMLSyntaxError as error:
-                        print "*WARN* Host %s|load_configuration_from_template|Unable to retrieve the DIFF configuration to be committed. Printout will be skipped, trying to commit....: %s" % (self.target, error)
+                        print("*WARN* Host %s|load_configuration_from_template|Unable to retrieve the DIFF configuration to be committed. Printout will be skipped, trying to commit....: %s" % (self.target, error))
 
                 begin_commit_datetime = datetime.now()
                 if print_conf_detail:
@@ -254,57 +254,57 @@ class pybot_jrouter(object):
                         #begin_commit_datetime=datetime.now()
                         commitResp = candidate.commit(comment=commit_comment, sync=synchronize, force_sync=force_synchronize, full=full, detail=True)
                         #finish_commit_datetime=datetime.now()
-                        print '*INFO* Host %s|load_configuration_from_template|Configuration to be committed:  %s' % (self.target, etree.tostring(commitResp))
+                        print('*INFO* Host %s|load_configuration_from_template|Configuration to be committed:  %s' % (self.target, etree.tostring(commitResp)))
                     except lxml.etree.XMLSyntaxError as error:
-                        print "*WARN* Host %s|load_configuration_from_template|Unable to retrieve the committed configuration. Printout will be skipped, check the node or try again with print_conf_detail=False....: %s" % (self.target, error)
+                        print("*WARN* Host %s|load_configuration_from_template|Unable to retrieve the committed configuration. Printout will be skipped, check the node or try again with print_conf_detail=False....: %s" % (self.target, error))
                         return False
                 else:
                     begin_commit_datetime = datetime.now()
                     commitResp = candidate.commit(comment=commit_comment, sync=synchronize, force_sync=force_synchronize, full=full, detail=False)
                     finish_commit_datetime = datetime.now()
         except LockError as lockError:
-            print "*WARN* Host %s|load_configuration_from_template|Problems locking configuration: %s" % (self.target, lockError)
+            print("*WARN* Host %s|load_configuration_from_template|Problems locking configuration: %s" % (self.target, lockError))
             if parallel:
                 return "Exception %s:" %lockError
             else:
                 raise FatalError("Host %s|load_configuration_from_template|Unable to lock configuration.....exiting: %s" % (self.target, lockError))
         except (RpcError, RpcTimeoutError) as rpcError:
             #warnings severity is already being ignored in the Config context manager
-            print "*WARN* Host %s|load_configuration_from_template|Problems opening configuration: %s" % (self.target, rpcError)
+            print("*WARN* Host %s|load_configuration_from_template|Problems opening configuration: %s" % (self.target, rpcError))
             if parallel:
                 return "Exception %s:" %rpcError
             else:
                 raise FatalError("Host %s|load_configuration_from_template|Unable to open configuration.....exiting: %s" % (self.target, rpcError))
         except ConfigLoadError as configError:
-            print "*WARN* Host %s|load_configuration_from_template|Template %s|Problems loading the configuration: %s.....exiting" % (self.target, kvargs['jinja2_file'], configError)
+            print("*WARN* Host %s|load_configuration_from_template|Template %s|Problems loading the configuration: %s.....exiting" % (self.target, kvargs['jinja2_file'], configError))
             if print_conf_diff:
                 try:
-                    print '*INFO* Host %s|load_configuration_from_template|DIFF configuration to be committed  %s' % (self.target, candidate.diff())
+                    print('*INFO* Host %s|load_configuration_from_template|DIFF configuration to be committed  %s' % (self.target, candidate.diff()))
                 except lxml.etree.XMLSyntaxError as error:
-                    print "*WARN* Host %s|load_configuration_from_template|Unable to retrieve the DIFF configuration to be committed. Printout will be skipped, trying to commit....: %s" % (self.target, error)
+                    print("*WARN* Host %s|load_configuration_from_template|Unable to retrieve the DIFF configuration to be committed. Printout will be skipped, trying to commit....: %s" % (self.target, error))
             if parallel:
                 return "Exception %s:" %configError
             else:
                 raise FatalError("Host %s|load_configuration_from_template|Template %s|Unable to load the configuration.....exiting: %s" % (self.target, kvargs['jinja2_file'], configError))
         except CommitError as commitError:
-            print "*WARN* Host %s|load_configuration_from_template|Template %s|Problems committing the configuration: %s.....exiting" % (self.target, kvargs['jinja2_file'], commitError)
+            print("*WARN* Host %s|load_configuration_from_template|Template %s|Problems committing the configuration: %s.....exiting" % (self.target, kvargs['jinja2_file'], commitError))
             if parallel:
                 return "Exception %s:" %commitError
             else:
                 raise FatalError("Host %s|load_configuration_from_template|Template %s|Unable to commit the configuration.....exiting: %s" % (self.target, kvargs['jinja2_file'], commitError))
         except UnlockError as unlockError:
-            print "*WARN* Host %s|load_configuration_from_template|Problems unlocking the configuration: %s.....exiting" % (self.target, unlockError)
+            print("*WARN* Host %s|load_configuration_from_template|Problems unlocking the configuration: %s.....exiting" % (self.target, unlockError))
             if parallel:
                 return "Exception %s:" %unlockError
             else:
                 raise FatalError("Host %s|load_configuration_from_template|Unable to unlock the configuration.....exiting: %s" % (self.target, unlockError))
         except Exception as error:
             if 'Opening and ending tag mismatch: routing-engine ' in error:
-                print '*INFO* Host %s|load_configuration_from_template|%s' %(self.target, error)
+                print('*INFO* Host %s|load_configuration_from_template|%s' %(self.target, error))
                 pass
                 return True
             else:
-                print "*WARN* Host %s|load_configuration_from_template|An unhandled exception occurred: %s.....exiting" % (self.target, error)
+                print("*WARN* Host %s|load_configuration_from_template|An unhandled exception occurred: %s.....exiting" % (self.target, error))
                 if parallel:
                     return "Exception %s:" %error
                 else:
@@ -313,7 +313,7 @@ class pybot_jrouter(object):
         diff_load_time = finish_load_datetime - begin_load_datetime
         diff_commit_time = finish_commit_datetime - begin_commit_datetime
         total_time = finish_commit_datetime - finish_load_datetime
-        print '*INFO* Host %s|load_configuration_from_template|Configuration successfully committed|Template: %s|Load Time: %s|Commit Time: %s| Total Time: %s' % (self.target, kvargs['jinja2_file'], self.pretty_time_delta(diff_load_time.seconds), self.pretty_time_delta(diff_commit_time.seconds), self.pretty_time_delta(total_time.seconds))
+        print('*INFO* Host %s|load_configuration_from_template|Configuration successfully committed|Template: %s|Load Time: %s|Commit Time: %s| Total Time: %s' % (self.target, kvargs['jinja2_file'], self.pretty_time_delta(diff_load_time.seconds), self.pretty_time_delta(diff_commit_time.seconds), self.pretty_time_delta(total_time.seconds)))
 
         return True
 
@@ -343,7 +343,7 @@ class pybot_jrouter(object):
                 self._conn.candidate.lock()
             except LockError as l_error:
 
-                print "*WARN* Problems locking configuration: %s" % (l_error)
+                print("*WARN* Problems locking configuration: %s" % (l_error))
                 raise FatalError("Problems locking configuration,exiting...")
                 return False
             try:
@@ -361,14 +361,14 @@ class pybot_jrouter(object):
 
                 # hack to avoid return an error whenever config load get a warning
                 if error.rpc_error['severity'] == 'warning':
-                    print "*INFO* Problems loading configuration: %s" % (error.rpc_error['message'])
+                    print("*INFO* Problems loading configuration: %s" % (error.rpc_error['message']))
 
             except lxml.etree.XMLSyntaxError as error:
-                print "*WARN* Problems loading configuration: %s" % (error)
+                print("*WARN* Problems loading configuration: %s" % (error))
                 raise FatalError("Problems loading configuration,exiting...")
 
 
-            print '*INFO* Configuration to be commited  %s' % (self._conn.candidate.diff())
+            print('*INFO* Configuration to be commited  %s' % (self._conn.candidate.diff()))
             try:
                 self._conn.candidate.commit(comment=commit_comment)
                 self._conn.candidate.unlock()
@@ -376,7 +376,7 @@ class pybot_jrouter(object):
             except (CommitError, LockError) as err:
                 #print err
                 self._conn.candidate.rollback()
-                print "*WARN* Problems commiting configuration: %s" % (err)
+                print("*WARN* Problems commiting configuration: %s" % (err))
                 raise FatalError("Error commiting configuration, exiting....")
         else:
             raise FatalError("Expected result is True but was False,test will go on")
@@ -408,7 +408,7 @@ class pybot_jrouter(object):
         #GRANDPA=os.path.abspath(os.path.join(PARENT_ROOT, os.pardir))
 
         if not os.path.exists(dirpath):
-            os.makedirs(dirpath, mode=0777)
+            os.makedirs(dirpath, mode="0777")
 
         timestamp = datetime.now().strftime("%Y-%m-%d")
 
@@ -418,16 +418,16 @@ class pybot_jrouter(object):
                 cmd = 'jsnap --'+ snaptype + " " + timestamp + '_'+ tag + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target + ' -s' + section + ' ' + test
             else:
                 cmd = 'jsnap --'+ snaptype + " " + timestamp + '_'+ tag + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target + ' ' + test
-            print "Executing: %s" %cmd
+            print("Executing: %s" %cmd)
             jsnap_command = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True, cwd=dirpath)
             output, errors = jsnap_command.communicate()
             if ((("Exiting." in errors)) or("Unable to connect to device: " in errors) or ("jsnap: not found" in errors) or ("appears to be missing" in output)):
-                print output
-                print errors
+                print(output)
+                print(errors)
                 raise FatalError("Unable to execute jsnap.....exiting")
             else:
                 return True
-            print output, errors
+            print(output, errors)
             return True
 
         elif snaptype == "snapcheck":
@@ -436,17 +436,17 @@ class pybot_jrouter(object):
                 cmd = 'jsnap --'+ snaptype + " " + timestamp + '_'+ tag + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target + ' -s' + section + ' ' + test
             else:
                 cmd = 'jsnap --'+ snaptype + " " + timestamp + '_'+ tag + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target  + ' ' + test
-            print "Executing: %s" %cmd
+            print("Executing: %s" %cmd)
             jsnap_command = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True, cwd=dirpath)
             output, errors = jsnap_command.communicate()
 
-            print output
-            print errors
+            print(output)
+            print(errors)
 
             if ((("Exiting." in errors)) or("Unable to connect to device: " in errors) or ("jsnap: not found" in errors) or ("appears to be missing" in output)):
 
-                print output
-                print errors
+                print(output)
+                print(errors)
                 raise FatalError("Unable to execute jsnap.....exiting")
 
             else:
@@ -464,16 +464,16 @@ class pybot_jrouter(object):
                 cmd_check = 'jsnap --'+ snaptype + " " + timestamp + '_pre' + ',' +  timestamp + '_post' + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target  + ' -s' + section + ' ' + test
             else:
                 cmd_check = 'jsnap --'+ snaptype + " " + timestamp + '_pre' + ',' +  timestamp + '_post' + ' -l ' + self.user + ' -p ' + self.password + ' -t ' + self.target  + ' '  + test
-            print "Executing: %s" %cmd_check
+            print("Executing: %s" %cmd_check)
             jsnap_command = sub.Popen(cmd_check, stdout=sub.PIPE, stderr=sub.PIPE, shell=True, cwd=dirpath)
             output, errors = jsnap_command.communicate()
-            print output
-            print errors
+            print(output)
+            print(errors)
 
             if ((("Exiting." in errors)) or("Unable to connect to device: " in errors) or ("jsnap: not found" in errors) or ("appears to be missing" in output)):
 
-                print output
-                print errors
+                print(output)
+                print(errors)
                 raise FatalError("Unable to execute jsnap.....exiting")
 
             else:
@@ -504,7 +504,7 @@ class pybot_jrouter(object):
                 self._conn.rpc.request_save_rescue_configuration()
             except RpcError as err:
                 rpc_error = err.__repr__()
-                print rpc_error
+                print(rpc_error)
             return self
         # Checking if this attribute was already attached to Device
         if hasattr(self._conn, "candidate"):
@@ -516,7 +516,7 @@ class pybot_jrouter(object):
         try:
             self._conn.candidate.lock()
         except LockError as l_error:
-            print "*WARN* Problems locking configuration: %s" % (l_error)
+            print("*WARN* Problems locking configuration: %s" % (l_error))
             raise FatalError("Unable to lock configuration.....exiting")
 
         # Loading rescue configuration
@@ -525,11 +525,11 @@ class pybot_jrouter(object):
                 self._conn.rpc.load_configuration({'rescue': 'rescue'})
             except RpcError as err:
                 rpc_error = err.__repr__()
-                print rpc_error
+                print(rpc_error)
             except ConfigLoadError as error:
-                print "*WARN* Problems loading configuration: %s" % (error)
+                print("*WARN* Problems loading configuration: %s" % (error))
                 raise FatalError("Unable to load configuration.....exiting")
-            print '*INFO* Configuration to be commited  %s' % (self._conn.candidate.diff())
+            print('*INFO* Configuration to be commited  %s' % (self._conn.candidate.diff()))
 
             try:
                 self._conn.candidate.commit(comment='loading rescue configuration')
@@ -537,7 +537,7 @@ class pybot_jrouter(object):
                 return True
 
             except (CommitError, LockError) as err:
-                print err
+                print(err)
                 raise FatalError("Unable to commit or unlock configuration......exiting")
 
     def commands_executor(self, **kvargs):
@@ -575,7 +575,7 @@ class pybot_jrouter(object):
 
             # Create directory if does not exist
             if not os.path.exists(dirpath):
-                os.makedirs(dirpath, mode=0777)
+                os.makedirs(dirpath, mode="0777")
                 
             if regex:
 
@@ -583,7 +583,7 @@ class pybot_jrouter(object):
                     cmd_to_execute = self._conn.rpc.cli(command)
                 except RpcError as err:
                     rpc_error = err.__repr__()
-                    print xmltodict.parse(rpc_error)['rpc-error']['error-message']
+                    print(xmltodict.parse(rpc_error)['rpc-error']['error-message'])
                     raise FatalError("Error executing RPC,exiting...")
 
                 operations = command.split("|")[1:]
@@ -591,7 +591,7 @@ class pybot_jrouter(object):
                 lines = result_tmp.strip().split('\n')
                 for operation in operations:
                     if re.search("count", operation, re.IGNORECASE):
-                        print '*INFO* Count: %s lines' % len(lines)
+                        print('*INFO* Count: %s lines' % len(lines))
                         return len(lines)
                     match = re.search('match "?(.*)"?', operation, re.IGNORECASE)
                     if match:
@@ -615,17 +615,17 @@ class pybot_jrouter(object):
                 text_matches = re.search(regex, cmd_to_execute.text, re.MULTILINE)
 
                 if text_matches:
-                    print text_matches.groups()
+                    print(text_matches.groups())
                     return text_matches.groups()
             else:
-                print "Executing: %s" %command
+                print("Executing: %s" %command)
 
                 try:
                     cmd_to_execute = self._conn.rpc.cli(command)
 
                 except RpcError as err:
                     rpc_error = err.__repr__()
-                    print xmltodict.parse(rpc_error)['rpc-error']['error-message']
+                    print(xmltodict.parse(rpc_error)['rpc-error']['error-message'])
                     raise FatalError("Error executing RPC,exiting...")
 
                 #print type(cmd_to_execute)
@@ -635,21 +635,21 @@ class pybot_jrouter(object):
                     cmd_clean = command.replace(" ", "_").replace('_"', '_').replace('"_', '_').replace('"', '').replace("/", "_")
                     filename = timestamp2 + '_'+ self.target  + "_" + cmd_clean + "." + "txt"
                     path = os.path.join(dirpath, filename).replace(root_dir, '.')
-                    print "Saving file as: %s" %path
-                    print '*HTML* <a href="%s" target="_blank">%s</a>' % (path, path)
+                    print("Saving file as: %s" %path)
+                    print('*HTML* <a href="%s" target="_blank">%s</a>' % (path, path))
 
                     try:
                         with open(path, 'w') as file_to_save:
                             file_to_save.write(cmd_to_execute.text)
                         return True
                     except IOError as err:
-                        print err.errno, err.strerror
+                        print(err.errno, err.strerror)
                         raise FatalError("Error opening File, exiting...")
 
         elif format == "xml":
 
             if xpath:
-                print "Executing: %s [%s]" %(command, xpath)
+                print("Executing: %s [%s]" %(command, xpath))
 
                 try:
                     cmd_to_execute = self._conn.rpc.cli(command, format='xml')
@@ -657,7 +657,7 @@ class pybot_jrouter(object):
 
                 except RpcError as err:
                     rpc_error = err.__repr__()
-                    print xmltodict.parse(rpc_error)['rpc-error']['error-message']
+                    print(xmltodict.parse(rpc_error)['rpc-error']['error-message'])
                     raise FatalError("Error executing RPC, exiting...")
 
                 xpath_result = cmd_to_execute.xpath(xpath)[0].text.strip()
@@ -665,7 +665,7 @@ class pybot_jrouter(object):
                 if xpath_result == None:
                     raise FatalError("XPATH malformed, exiting...")
                 else:
-                    print xpath_result
+                    print(xpath_result)
                     return xpath_result
             else:
                 try:
@@ -674,7 +674,7 @@ class pybot_jrouter(object):
 
                 except RpcError as err:
                     rpc_error = err.__repr__()
-                    print xmltodict.parse(rpc_error)['rpc-error']['error-message']
+                    print(xmltodict.parse(rpc_error)['rpc-error']['error-message'])
                     raise FatalError("Error executing RPC, exiting...")
                 return xml_result
         else:
@@ -683,12 +683,12 @@ class pybot_jrouter(object):
     def save_config_to_file(self, **kvargs):
 
         directory = kvargs['directory'] + '/' + timestamp4
-        print "*INFO* Saving current configuration..."
+        print("*INFO* Saving current configuration...")
         file_obj = StartShell(self._conn)
         file_obj.open()
         got = file_obj.run("cli -c 'show configuration | save " + directory + "_config.txt' ")
         file_obj.close()
-        print "*INFO* %s" % (got)
+        print("*INFO* %s" % (got))
         return got[-2].split("'")[1]
 
     def rollback(self, commit_comment='__JRouter__', **kvargs):
@@ -714,11 +714,11 @@ class pybot_jrouter(object):
         try:
             self._conn.candidate.lock()
         except LockError as l_error:
-            print "*WARN* Problems locking configuration: %s" % (l_error)
+            print("*WARN* Problems locking configuration: %s" % (l_error))
             raise FatalError("Unable to lock configuration... exiting")
 
         try:
-            print "Rolling back configuration...."
+            print("Rolling back configuration....")
             self._conn.candidate.rollback(rollback_num)
             self._conn.candidate.commit(comment=commit_comment)
             self._conn.candidate.unlock()
@@ -741,7 +741,7 @@ class pybot_jrouter(object):
 
         try:
             self.open_connection()
-            print 'Executing switchover to complete the SW upgrade !!!'
+            print('Executing switchover to complete the SW upgrade !!!')
             switchover_cmd = self._conn.cli("request chassis routing-engine master switch no-confirm", format='xml', warning=False)
             self.close_connection()
         except ConnectError as c_error:
@@ -753,16 +753,16 @@ class pybot_jrouter(object):
         #     print Serr
         #     pass
         except SocketError as S_err:
-            print S_err
+            print(S_err)
             pass
         except ConnectClosedError as CC_error:
-            print CC_error
+            print(CC_error)
             pass
 
         sleep(60)
         try:
             # WA for dealing with in band connections
-            print "Re-opening connection......."
+            print("Re-opening connection.......")
             self._conn.open(auto_probe=900)
             return True
         except ConnectError as c_error:
@@ -783,7 +783,7 @@ class pybot_jrouter(object):
         complete_rt = tbl.get()
         if 'route' in kvargs.keys():
             route = kvargs['route']
-        print 'route', route
+        print('route', route)
         if route != 'None':
             single_rt = tbl.get(route)
 
@@ -825,5 +825,5 @@ class pybot_jrouter(object):
             cnf = self._conn.rpc.get_config(filter_xml=etree.XML(xml_filter))
         #print etree.tostring(cnf)
         config = etree.dump(cnf)
-        print config
+        print(config)
         return config

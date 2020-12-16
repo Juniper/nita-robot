@@ -20,13 +20,15 @@ Documentation   A resource file with reusable keywords for 'executing the comman
 
 Device Open Connection
 	[Arguments]	@{devices}
-	:FOR    ${device}    IN    @{devices}
-	\	Run Keyword     ${device}.Open Connection
+	FOR    ${device}    IN    @{devices}
+		Run Keyword     ${device}.Open Connection
+        END
 
 Device Close Connection
 	[Arguments]	@{devices}
-	:FOR    ${device}    IN    @{devices}
-        \	Run Keyword     ${device}.Close Connection
+	FOR    ${device}    IN    @{devices}
+        	Run Keyword     ${device}.Close Connection
+        END
 
 Command Executor
 	[Arguments]	${device}	${command}	${display_format}=${Empty}	${xpath}=${Empty}	${regex}=${Empty}
@@ -39,8 +41,9 @@ Box Command Executor
 
 Rollback Device Config
 	[Arguments]	@{devices}
-	:FOR    ${device}    IN    @{devices}
-	\	Run Keyword	${device}.Rollback 	rollback_num=1	commit_comment="Automated Rollback of RF tests"
+	FOR    ${device}    IN    @{devices}
+		Run Keyword	${device}.Rollback 	rollback_num=1	commit_comment="Automated Rollback of RF tests"
+        END
 
 Rollback
 	[Arguments]	${device}	${number}
