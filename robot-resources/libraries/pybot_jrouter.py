@@ -408,7 +408,7 @@ class pybot_jrouter(object):
         #GRANDPA=os.path.abspath(os.path.join(PARENT_ROOT, os.pardir))
 
         if not os.path.exists(dirpath):
-            os.makedirs(dirpath, mode="0777")
+            os.makedirs(dirpath, mode=0o777)
 
         timestamp = datetime.now().strftime("%Y-%m-%d")
 
@@ -575,7 +575,7 @@ class pybot_jrouter(object):
 
             # Create directory if does not exist
             if not os.path.exists(dirpath):
-                os.makedirs(dirpath, mode="0777")
+                os.makedirs(dirpath, mode=0o777)
                 
             if regex:
 
