@@ -1,16 +1,16 @@
-# NITA Robot 20.10
+# NITA Robot 21.7
 
-Welcome to NITA 20.10.
+Welcome to NITA 21.7.
 
 Packages built from this branch will be nita-*-20.10-x where x is the packaging release.
 This branch also contains patches from other branches or minor modifications as required to support the stability and usability of the release.
 There are also some backwards compatibility packages here for ansible and robot that allow projects written for NITA 3.0.7 to work without having to make any changes.
 
-Note that NITA 20.10 backward compatible with NITA 3.0.7 projects, provided the correct ansible and robot containers are installed.
+Note that NITA 21.7 backward compatible with NITA 20.10 projects, provided the correct ansible and robot containers are installed.
 
 # Copyright
 
-Copyright 2020, Juniper Networks, Inc.
+Copyright 2021, Juniper Networks, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -46,7 +46,7 @@ If you do not have the the required package files for your system, .deb for Ubun
 If you have been provided with the .deb package file, then follow the instructions provided in the [Dependencies](##Dependencies) section above and then run the following command:
 
 ```bash
-sudo apt-get install ./nita-robot-3.2.2-20.10-1.deb
+sudo apt-get install ./nita-robot-3.2.2-21.7-1.deb
 ```
 
 ### Centos
@@ -54,7 +54,7 @@ sudo apt-get install ./nita-robot-3.2.2-20.10-1.deb
 If you have been provided with the .rpm package file, then follow the instructions provided in the [Dependencies](##Dependencies) section above and then run the following command:
 
 ```bash
-sudo yum install ./nita-robot-3.2.2-20.10-1.noarch.rpm
+sudo yum install ./nita-robot-3.2.2-21.7-1.noarch.rpm
 ```
 
 # Misc
