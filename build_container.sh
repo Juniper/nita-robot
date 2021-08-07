@@ -14,4 +14,4 @@
 #
 # ********************************************************
 
-docker build -t juniper/nita-robot:20.10-1 .
+docker build -t juniper/nita-robot:21.7-1 .

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+PACKAGE=nita-robot-4.1
+VERSION=21.7-1
+IMAGES_DIR=/usr/share/${PACKAGE}/images
+
+# stop the script if a command fails
+set -e
+
 # ********************************************************
 #
 # Project: nita-robot
@@ -13,13 +20,6 @@
 # Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
 #
 # ********************************************************
-
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10-1
-IMAGES_DIR=/usr/share/${PACKAGE}/images
-
-# stop the script if a command fails
-set -e
 
 # function to add docker images
 function add_image {
@@ -50,4 +50,4 @@ function add_image {
 }
 
 # load docker images
-add_image $IMAGES_DIR/nita-robot-20.10.tar.gz juniper/nita-robot:20.10-1
+add_image $IMAGES_DIR/nita-robot-21.7.tar.gz juniper/nita-robot:21.7-1

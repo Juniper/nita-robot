@@ -2,7 +2,7 @@
 
 Welcome to NITA 21.7.
 
-Packages built from this branch will be nita-*-20.10-x where x is the packaging release.
+Packages built from this branch will be nita-*-21.7-x where x is the packaging release.
 This branch also contains patches from other branches or minor modifications as required to support the stability and usability of the release.
 There are also some backwards compatibility packages here for ansible and robot that allow projects written for NITA 3.0.7 to work without having to make any changes.
 
@@ -46,7 +46,7 @@ If you do not have the the required package files for your system, .deb for Ubun
 If you have been provided with the .deb package file, then follow the instructions provided in the [Dependencies](##Dependencies) section above and then run the following command:
 
 ```bash
-sudo apt-get install ./nita-robot-3.2.2-21.7-1.deb
+sudo apt-get install ./nita-robot-4.1-21.7-1.deb
 ```
 
 ### Centos
@@ -54,7 +54,7 @@ sudo apt-get install ./nita-robot-3.2.2-21.7-1.deb
 If you have been provided with the .rpm package file, then follow the instructions provided in the [Dependencies](##Dependencies) section above and then run the following command:
 
 ```bash
-sudo yum install ./nita-robot-3.2.2-21.7-1.noarch.rpm
+sudo yum install ./nita-robot-4.1-21.7-1.noarch.rpm
 ```
 
 # Misc

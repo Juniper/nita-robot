@@ -17,8 +17,9 @@
 # stop the script if a command fails
 set -e
 
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10-1
+PACKAGE=nita-robot-4.1
+VERSION=21.7
+RELEASE=1
 
 # cleanup version if the directory name is used
 VTMP="${VERSION#$PACKAGE-}"
@@ -30,35 +31,41 @@ if [[ "x$VERSION" == "x" ]]; then
     exit 1
 fi
 
-if [ ! -d ${PACKAGE}-${VERSION} ]; then
-    echo "Directory ${PACKAGE}-${VERSION} does not exist"
+if [ ! -d ${PACKAGE}-${VERSION}-${RELEASE} ]; then
+    echo "Directory ${PACKAGE}-${VERSION}-${RELEASE} does not exist"
 fi
 
 # installing docker-ce on host
-if dpkg-query -s docker-ce >/dev/null 2>&1; then
+if (yum list installed | grep docker-ce) >/dev/null 2>&1; then
     echo "docker-ce already installed"
 else
-    apt-get -y update
-    apt-get -y install apt-transport-https ca-certificates curl \
-        software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg |apt-key add -
-    apt-key fingerprint 0EBFCD88
-    add-apt-repository \
-       "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-       $(lsb_release -cs) stable"
-    apt-get -y update
-    apt-get -y install docker-ce
+    yum install -y yum-utils rpm-build
+    yum-config-manager \
+        --add-repo \
+        https://download.docker.com/linux/centos/docker-ce.repo
+    yum update -y
+    yum install -y docker-ce --nobest
+    systemctl start docker
 fi
 
+SOURCE_DIR=${PACKAGE}-${VERSION}-${RELEASE}/SOURCES
+
 # pull all the required containers
-IMAGEDIR=${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
+IMAGEDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
 (
     cd ..
     ./build_container.sh
 )
-docker save juniper/nita-robot:20.10-1 | gzip > ${IMAGEDIR}/nita-robot-20.10.tar.gz
+docker save juniper/nita-robot:21.7-1 | gzip > ${IMAGEDIR}/nita-robot-21.7.tar.gz
 
-chmod 755 ${PACKAGE}-${VERSION}/usr/local/bin/*
+# Create a tarball of with source
+(
+    cd ${SOURCE_DIR}
+    tar czf ${PACKAGE}-${VERSION}.tar.gz ${PACKAGE}-${VERSION}
+)
 
-dpkg-deb --build ${PACKAGE}-${VERSION}
+# Build rpm file
+export RPM_BUILD_DIR="${PWD}/${PACKAGE}-${VERSION}-${RELEASE}"
+cp .rpmmacros ~
+rpmbuild -ba ${PACKAGE}-${VERSION}-${RELEASE}/SPECS/${PACKAGE}.spec
