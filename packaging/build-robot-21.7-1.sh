@@ -50,6 +50,11 @@ else
     apt-get -y install docker-ce
 fi
 
+# copy cli scripts
+SCRIPTSDIR=${PACKAGE}-${VERSION}/usr/local/bin
+mkdir -p ${SCRIPTSDIR}
+install -m 755 ../cli_scripts/* ${SCRIPTSDIR}
+
 # pull all the required containers
 IMAGEDIR=${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}

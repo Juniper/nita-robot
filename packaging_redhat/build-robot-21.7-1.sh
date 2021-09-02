@@ -50,6 +50,11 @@ fi
 
 SOURCE_DIR=${PACKAGE}-${VERSION}-${RELEASE}/SOURCES
 
+# copy cli scripts
+SCRIPTSDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/local/bin
+mkdir -p ${SCRIPTSDIR}
+install -m 755 ../cli_scripts/* ${SCRIPTSDIR}
+
 # pull all the required containers
 IMAGEDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
