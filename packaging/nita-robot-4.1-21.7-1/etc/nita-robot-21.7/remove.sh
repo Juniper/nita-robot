@@ -4,7 +4,7 @@
 #
 # Project: nita-robot
 #
-# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+# Copyright (c) Juniper Networks, Inc., 2021. All rights reserved.
 #
 # Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
 #
@@ -14,8 +14,8 @@
 #
 # ********************************************************
 
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10-1
+PACKAGE=nita-robot-4.1
+VERSION=21.7-1
 
 # stop the script if a command fails
 #set -e
@@ -31,7 +31,7 @@ docker ps --filter status=dead --filter status=exited -aq | xargs -r docker rm -
 docker volume ls -qf dangling=true | xargs -r docker volume rm
 
 # remove docker images
-docker rmi -f juniper/nita-robot:20.10-1
+docker rmi -f juniper/nita-robot:21.7-1
 docker rmi -f juniper/nita-robot:_nita_release_$VERSION
 
 # remove unused images

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bash /etc/nita-robot-21.7/install.sh

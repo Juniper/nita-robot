@@ -4,7 +4,7 @@
 #
 # Project: nita-robot
 #
-# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+# Copyright (c) Juniper Networks, Inc., 2021. All rights reserved.
 #
 # Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
 #
@@ -17,8 +17,8 @@
 # stop the script if a command fails
 set -e
 
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10
+PACKAGE=nita-robot-4.1
+VERSION=21.7
 RELEASE=1
 
 # cleanup version if the directory name is used
@@ -50,6 +50,11 @@ fi
 
 SOURCE_DIR=${PACKAGE}-${VERSION}-${RELEASE}/SOURCES
 
+# copy cli scripts
+SCRIPTSDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/local/bin
+mkdir -p ${SCRIPTSDIR}
+install -m 755 ../cli_scripts/* ${SCRIPTSDIR}
+
 # pull all the required containers
 IMAGEDIR=${SOURCE_DIR}/${PACKAGE}-${VERSION}/usr/share/${PACKAGE}/images
 mkdir -p ${IMAGEDIR}
@@ -57,7 +62,7 @@ mkdir -p ${IMAGEDIR}
     cd ..
     ./build_container.sh
 )
-docker save juniper/nita-robot:20.10-1 | gzip > ${IMAGEDIR}/nita-robot-20.10.tar.gz
+docker save juniper/nita-robot:21.7-1 | gzip > ${IMAGEDIR}/nita-robot-21.7.tar.gz
 
 # Create a tarball of with source
 (

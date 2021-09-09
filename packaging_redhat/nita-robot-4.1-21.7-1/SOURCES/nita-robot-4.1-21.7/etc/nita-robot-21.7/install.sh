@@ -1,10 +1,17 @@
 #!/bin/bash
 
+PACKAGE=nita-robot-4.1
+VERSION=21.7-1
+IMAGES_DIR=/usr/share/${PACKAGE}/images
+
+# stop the script if a command fails
+set -e
+
 # ********************************************************
 #
 # Project: nita-robot
 #
-# Copyright (c) Juniper Networks, Inc., 2020. All rights reserved.
+# Copyright (c) Juniper Networks, Inc., 2021. All rights reserved.
 #
 # Notice and Disclaimer: This code is licensed to you under the Apache 2.0 License (the "License"). You may not use this code except in compliance with the License. This code is not an official Juniper product. You can obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0.html
 #
@@ -13,13 +20,6 @@
 # Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
 #
 # ********************************************************
-
-PACKAGE=nita-robot-3.2.2
-VERSION=20.10-1
-IMAGES_DIR=/usr/share/${PACKAGE}/images
-
-# stop the script if a command fails
-set -e
 
 # function to add docker images
 function add_image {
@@ -50,4 +50,4 @@ function add_image {
 }
 
 # load docker images
-add_image $IMAGES_DIR/nita-robot-20.10.tar.gz juniper/nita-robot:20.10-1
+add_image $IMAGES_DIR/nita-robot-21.7.tar.gz juniper/nita-robot:21.7-1
