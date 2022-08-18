@@ -12,9 +12,7 @@
 # Third-Party Code: This code may depend on other components under separate copyright notice and license terms. Your use of the source code for those components is subject to the terms and conditions of the respective license as noted in the Third-Party source code file.
 #
 # ********************************************************
-if [ "$_CLI_RUNNER_DEBUG" == 1 ]; then
+        echo -n "    nita-cmd robot cli 22.8 => "
         echo `cat <<EOT
-docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw juniper/nita-robot:21.7-1 /bin/bash
+Starts a robot container (version 22.8) command line shell interface in the /project directory.
 EOT` >&2
-fi
-docker run -it --rm --name robot -u root -v /var/nita_project:/project:rw -v /var/nita_configs:/var/tmp/build:rw juniper/nita-robot:21.7-1 /bin/bash
