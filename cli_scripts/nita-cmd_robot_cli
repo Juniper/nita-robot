@@ -17,7 +17,7 @@
 
 if [ -x "$(command -v kubectl)" ]; then
 
-    CMD="kubectl run -i --tty --rm nita-robot --image=juniper/nita-robot:22.8-2 --restart=Never -- bash"
+    CMD="kubectl run -i --tty -n nita --rm nita-robot --image=juniper/nita-robot:22.8-2 --restart=Never -- bash"
 
 elif [ -x "$(command -v docker)" ]; then
 
