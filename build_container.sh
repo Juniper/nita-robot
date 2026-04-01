@@ -14,4 +14,4 @@
 #
 # ********************************************************
 
-docker build -t juniper/nita-robot:22.8-2 .
+docker build -t juniper/nita-robot:$(tr -d '\r\n[:space:]' < VERSION.txt) .
