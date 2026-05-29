@@ -45,14 +45,14 @@ password = av['group_vars']['all.yaml']['netconf_passwd']
 
 # set the management ip variables i.e. vmx1_mgmt_ip = "100.123.1.0"
 for key, value in iter(av['host_vars'].items()):
-    if 'management_interface' in value.keys():
+    if isinstance(value, dict) and 'management_interface' in value.keys():
         ip = value['management_interface']['ip']
         exec(key.replace("-", "_").replace(".yaml","") + '_mgmt_ip = "' + ip + '"')
 
 # core interface ip variables for use in tests
 # create ci_vmx1_ge_0_0_0, etc
 for key, value in iter(av['host_vars'].items()):
-    if 'core_interfaces' in value.keys():
+    if isinstance(value, dict) and 'core_interfaces' in value.keys():
         for i in value['core_interfaces']:
             hname = key.replace("-","_").replace(".yaml", "")
             iname = i['int'].replace("/","_").replace("-","_")
