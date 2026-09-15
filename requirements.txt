@@ -1,0 +1,5 @@
+robotframework==7.4.2
+PyYAML==6.0.3
+junos-eznc==2.8.2
+configparser==7.2.0
+xmltodict==1.0.4

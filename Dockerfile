@@ -12,12 +12,26 @@
 #
 # ********************************************************
 
-FROM python:3.11-slim-bookworm
+FROM python:3.11-alpine3.23 AS builder
+
+RUN apk add --no-cache \
+    build-base cargo libffi-dev libxml2-dev libxslt-dev openssl-dev
+
+COPY requirements.txt /tmp/requirements.txt
+RUN python -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
+ && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt \
+ && /opt/venv/bin/pip check
+
+FROM python:3.11-alpine3.23
+
+RUN apk add --no-cache libffi libxml2 libxslt openssl
+
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN mkdir -p /usr/share/nita-robot
+COPY robot-resources /usr/share/nita-robot/robot-resources
 
 LABEL net.juniper.framework="NITA"
-
-RUN apt-get update && apt-get install -y vim
-RUN python3 -m pip install robotframework pyyaml junos-eznc configparser xmltodict
-
-RUN mkdir /usr/share/nita-robot
-COPY robot-resources /usr/share/nita-robot/robot-resources
+LABEL org.opencontainers.image.source="https://github.com/Juniper/nita-robot"
