@@ -1,12 +1,11 @@
-[branch]: https://github.com/Juniper/nita/tree/23.12
-[readme]: https://github.com/Juniper/nita/blob/23.12/README.md
+[branch]: https://github.com/Juniper/nita/tree/26.10
+[readme]: https://github.com/Juniper/nita/blob/26.10/README.md
 
-# NITA Robot 23.12
+# NITA Robot 26.10
 
 Welcome to NITA, an open source platform for automating the building and testing of complex networks.
 
 # Release Notes
-The major change in this version is that all components now run within pods under the control of Kubernetes, rather than as Docker containers. Consequently we have updated the way that Robot runs because it is now controlled by Kubernetes instead of Docker. 
 
 Please refer to the [README][readme] for more details.
 
