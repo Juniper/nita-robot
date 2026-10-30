@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nita-robot"
+dynamic = ["version"]
+description = "Robot Framework keyword library and resource files for testing Junos devices (NITA)"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+dependencies = [
+    "robotframework>=7.0,<8",
+    "junos-eznc>=2.7",
+    "lxml",
+    "paramiko",
+    "jinja2",
+    "PyYAML>=6.0",
+    "xmltodict>=0.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/Juniper/nita-robot"
+
+# Files stay where the container build expects them; package-dir maps them into an installable layout:
+#   Library   pybot_jrouter
+#   Resource  nita_robot/device_resources.txt
+[tool.setuptools]
+package-dir = {"" = "robot-resources/libraries", "nita_robot" = "robot-resources/resource_files"}
+py-modules = ["pybot_jrouter"]
+packages = ["nita_robot"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+nita_robot = ["*.txt"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}

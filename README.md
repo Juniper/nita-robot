@@ -13,6 +13,25 @@ Please refer to the [README][readme] for more details.
 
 The simplest way to install nita-robot is by installing nita, which can be done by running the ``install.sh`` script located and in the parent [nita repo][branch] as described [here][readme].
 
+## Installing as a Python package
+
+The keyword library and resource files can also be installed without the container, for use from your own Robot Framework project:
+
+```
+pip install "nita-robot @ git+https://github.com/Juniper/nita-robot.git@main"
+```
+
+Then, in a suite or resource file:
+
+```
+*** Settings ***
+Library     pybot_jrouter    user=${USER}    target=${HOST}    password=${PASSWORD}    WITH NAME    r1
+Resource    nita_robot/device_resources.txt
+Resource    nita_robot/show_cmd_keywords.txt
+```
+
+Robot Framework finds the resource files on the Python module search path, so no ``--pythonpath`` or absolute paths are needed. The container-specific variables files in ``robot-resources/variables_file`` are not included in the package.
+
 ## Accessing the container
 
 You can access the nita-robot container via the shell, simply be running the following command:
