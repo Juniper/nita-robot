@@ -1,1 +1,4 @@
 *.deb
+build/
+dist/
+*.egg-info/
